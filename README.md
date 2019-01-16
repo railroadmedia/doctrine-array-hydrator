@@ -28,8 +28,8 @@ Given this doctrine entity:
 namespace App\Entity;
     
 use Doctrine\ORM\Mapping as ORM;
-use pmill\Doctrine\Hydrator\Test\Fixture\Company;
-use pmill\Doctrine\Hydrator\Test\Fixture\Permission;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Company;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Permission;
 
 /**
  * @ORM\Entity

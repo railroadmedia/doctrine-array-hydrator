@@ -1,5 +1,5 @@
 <?php
-namespace pmill\Doctrine\Hydrator\Test\Fixture;
+namespace Railroad\DoctrineArrayHydrator\Tests\Fixtures;
 
 use Doctrine\ORM\Mapping as ORM;
 

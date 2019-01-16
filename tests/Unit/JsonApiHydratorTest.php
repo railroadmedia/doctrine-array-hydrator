@@ -1,8 +1,10 @@
-<?php namespace pmill\Doctrine\Hydrator\Test;
+<?php
 
-use pmill\Doctrine\Hydrator\JsonApiHydrator;
-use pmill\Doctrine\Hydrator\Test\Fixture\Permission;
-use pmill\Doctrine\Hydrator\Test\Fixture\User;
+namespace Railroad\DoctrineArrayHydrator\Tests\Unit;
+
+use Railroad\DoctrineArrayHydrator\JsonApiHydrator;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Permission;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\User;
 
 class JsonApiHydratorTest extends TestCase
 {
@@ -11,26 +13,49 @@ class JsonApiHydratorTest extends TestCase
      */
     protected $hydrator;
 
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function setUp()
     {
         $this->setupDoctrine();
         $this->hydrator = new JsonApiHydrator($this->entityManager);
     }
 
-    public function testHydrateProperties()
+    public function testHydratePropertiesFromData()
     {
-        $jsonapiData = [
+        $data = [
+            'id' => 1,
             'attributes' => [
-                'id'=>1,
-                'name'=>'Fred Jones',
-                'email'=>'fred@example.org',
-            ]
+                'name' => 'Fred Jones',
+                'email' => 'fred@example.org',
+            ],
         ];
 
-        $user = $this->hydrator->hydrate(User::class, $jsonapiData);
-        $this->assertNull($user->getId());
-        $this->assertEquals($jsonapiData['attributes']['name'], $user->getName());
-        $this->assertEquals($jsonapiData['attributes']['email'], $user->getEmail());
+        $user = $this->hydrator->hydrate(new User(), $data);
+
+        $this->assertEquals($data['id'], $user->getId());
+        $this->assertEquals($data['attributes']['name'], $user->getName());
+        $this->assertEquals($data['attributes']['email'], $user->getEmail());
+    }
+
+    public function testHydratePropertiesFromTopLevelRequestParameters()
+    {
+        $data = [
+            'data' => [
+                'id' => 1,
+                'attributes' => [
+                    'name' => 'Fred Jones',
+                    'email' => 'fred@example.org',
+                ],
+            ],
+        ];
+
+        $user = $this->hydrator->hydrate(new User(), $data);
+
+        $this->assertEquals($data['data']['id'], $user->getId());
+        $this->assertEquals($data['data']['attributes']['name'], $user->getName());
+        $this->assertEquals($data['data']['attributes']['email'], $user->getEmail());
     }
 
     public function testHydrateOneToManyObjects()
@@ -46,11 +71,11 @@ class JsonApiHydratorTest extends TestCase
                         ['name' => 'New Permission 2'],
                     ],
                 ],
-            ]
+            ],
         ];
 
-        $user = new Fixture\User;
-        /** @var Fixture\User $user */
+        $user = new User();
+
         $user = $this->hydrator->hydrate($user, $data);
 
         $this->assertEquals($data['attributes']['name'], $user->getName());
@@ -76,7 +101,8 @@ class JsonApiHydratorTest extends TestCase
             'relationships' => [
                 'company' => [
                     'data' => [
-                        'id' => 1, 'type' => 'company'
+                        'id' => 1,
+                        'type' => 'company',
                     ],
                 ],
                 'permissions' => [
@@ -86,20 +112,24 @@ class JsonApiHydratorTest extends TestCase
                         ['id' => 3, 'type' => 'permission'],
                         ['id' => 4, 'type' => 'permission'],
                         ['id' => 5, 'type' => 'permission'],
-                    ]
+                    ],
                 ],
-            ]
+            ],
         ];
 
-        /** @var Fixture\User $user */
+        /** @var User() $user */
         $user = new User;
         $user = $this->hydrator->hydrate($user, $data);
 
-        $this->assertNull($user->getId());
+        $this->assertEquals($data['attributes']['id'], $user->getId());
         $this->assertEquals($data['attributes']['name'], $user->getName());
         $this->assertEquals($data['attributes']['email'], $user->getEmail());
 
-        $this->assertEquals(1, $user->getCompany()->getId());
+        $this->assertEquals(
+            1,
+            $user->getCompany()
+                ->getId()
+        );
 
         $permissions = $user->getPermissions();
         $this->assertEquals(1, $permissions[0]->getId());
@@ -116,13 +146,16 @@ class JsonApiHydratorTest extends TestCase
             'Relation `test` association not found'
         );
 
-        $user = new Fixture\User;
-        $this->hydrator->hydrate($user, [
-            'relationships' => [
-                'test' => [
-                    'data' => ['id' => 1, 'type' => 'company']
-                ]
+        $user = new User();
+        $this->hydrator->hydrate(
+            $user,
+            [
+                'relationships' => [
+                    'test' => [
+                        'data' => ['id' => 1, 'type' => 'company'],
+                    ],
+                ],
             ]
-        ]);
+        );
     }
 }

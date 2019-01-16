@@ -1,12 +1,15 @@
 <?php
 
-namespace pmill\Doctrine\Hydrator\Test;
+namespace Railroad\DoctrineArrayHydrator\Tests\Unit;
 
 use Doctrine\ORM\EntityManager;
 use Mockery as m;
-use pmill\Doctrine\Hydrator\ArrayHydrator;
-use pmill\Doctrine\Hydrator\Test\Fixture\Company;
-use pmill\Doctrine\Hydrator\Test\Fixture\Permission;
+use Railroad\DoctrineArrayHydrator\ArrayHydrator;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Address;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Call;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Company;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Permission;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\User;
 
 class ArrayHydratorTest extends TestCase
 {
@@ -15,6 +18,9 @@ class ArrayHydratorTest extends TestCase
      */
     protected $hydrator;
 
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function setUp()
     {
         $this->setupDoctrine();
@@ -24,108 +30,61 @@ class ArrayHydratorTest extends TestCase
     public function testHydrateProperties()
     {
         $data = [
-            'id'=>1,
-            'name'=>'Fred Jones',
-            'email'=>'fred@example.org',
+            'id' => 1,
+            'name' => 'Fred Jones',
+            'email' => 'fred@example.org',
         ];
 
-        $user = new Fixture\User;
+        $user = new User();
         $user = $this->hydrator->hydrate($user, $data);
 
-        $this->assertNull($user->getId());
+        $this->assertEquals($data['id'], $user->getId());
         $this->assertEquals($data['name'], $user->getName());
         $this->assertEquals($data['email'], $user->getEmail());
     }
 
-    /**
-     * Tests the hydration of a table where database column names and entity field names differ
-     *
-     * @throws \Exception
-     */
-    public function testHydratePropertiesByColumn()
+
+    public function testHydratePropertiesWithCamelize()
     {
         $data = [
-            'address_id'=>103,
-            'street_address'=>'Super Street 12',
-            'town_or_similar'=>'Farmville at the Sea',
-            'country'=>'Republic',
+            'street_address' => 'Road',
         ];
 
-        $this->hydrator->setHydrateBy(ArrayHydrator::HYDRATE_BY_COLUMN);
-        $address = new Fixture\Address;
+        $address = new Address();
         $address = $this->hydrator->hydrate($address, $data);
 
-        $this->assertNull($address->getId());
         $this->assertEquals($data['street_address'], $address->getStreetAddress());
-        $this->assertEquals($data['town_or_similar'], $address->getCity());
-        $this->assertEquals($data['country'], $address->getCountry());
-    }
-
-    /**
-     * Tests the hydration of a table where database column names and entity field names differ and we also want to
-     * hydrate the primary key
-     *
-     * @throws \Exception
-     */
-    public function testHydratePropertiesByColumnWithId()
-    {
-        $data = [
-            'address_id'=>103,
-            'street_address'=>'Super Street 12',
-            'town_or_similar'=>'Farmville at the Sea',
-            'country'=>'Republic',
-        ];
-
-        $this->hydrator->setHydrateId(true);
-        $this->hydrator->setHydrateBy(ArrayHydrator::HYDRATE_BY_COLUMN);
-        $address = new Fixture\Address;
-        $address = $this->hydrator->hydrate($address, $data);
-
-        $this->assertEquals($data['address_id'], $address->getId());
-        $this->assertEquals($data['street_address'], $address->getStreetAddress());
-        $this->assertEquals($data['town_or_similar'], $address->getCity());
-        $this->assertEquals($data['country'], $address->getCountry());
     }
 
     public function testHydrateManyToOneAssociation()
     {
         $data = [
-            'company'=>1,
-            'address'=>103,
+            'company' => 1,
+            'address' => 103,
         ];
 
-        $user = new Fixture\User;
-        /** @var Fixture\User $user */
+        $user = new User();
+        /** @var User() $user */
         $user = $this->hydrator->hydrate($user, $data);
 
-        $this->assertEquals(1, $user->getCompany()->getId());
-        $this->assertEquals(103, $user->getAddress()->getId());
-    }
-
-    public function testHydrateManyToOneAssociationByColumn()
-    {
-        $data = [
-            'company_id'=>1,
-            'foreign_address_id'=>103,
-        ];
-
-        $this->hydrator->setHydrateBy(ArrayHydrator::HYDRATE_BY_COLUMN);
-        $user = new Fixture\User;
-        /** @var Fixture\User $user */
-        $user = $this->hydrator->hydrate($user, $data);
-
-        $this->assertEquals(1, $user->getCompany()->getId());
-        $this->assertEquals(103, $user->getAddress()->getId());
+        $this->assertEquals(1,
+            $user->getCompany()
+                ->getId()
+        );
+        $this->assertEquals(103,
+            $user->getAddress()
+                ->getId()
+        );
     }
 
     public function testHydrateOneToManyAssociations()
     {
         $data = [
-            'permissions'=>[1,2,3,4,5],
+            'permissions' => [1, 2, 3, 4, 5],
         ];
 
-        $user = new Fixture\User;
-        /** @var Fixture\User $user */
+        $user = new User();
+        /** @var User() $user */
         $user = $this->hydrator->hydrate($user, $data);
 
         $permissions = $user->getPermissions();
@@ -146,8 +105,8 @@ class ArrayHydratorTest extends TestCase
             ],
         ];
 
-        $user = new Fixture\User;
-        /** @var Fixture\User $user */
+        $user = new User();
+        /** @var User() $user */
         $user = $this->hydrator->hydrate($user, $data);
 
         $this->assertEquals($data['name'], $user->getName());
@@ -164,22 +123,25 @@ class ArrayHydratorTest extends TestCase
     public function testHydrateAll()
     {
         $data = [
-            'id'=>1,
-            'name'=>'Fred Jones',
-            'email'=>'fred@example.org',
-            'company'=>1,
-            'permissions'=>[1,2,3,4,5],
+            'id' => 1,
+            'name' => 'Fred Jones',
+            'email' => 'fred@example.org',
+            'company' => 1,
+            'permissions' => [1, 2, 3, 4, 5],
         ];
 
-        $user = new Fixture\User;
-        /** @var Fixture\User $user */
+        $user = new User();
+        /** @var User() $user */
         $user = $this->hydrator->hydrate($user, $data);
 
-        $this->assertNull($user->getId());
+        $this->assertEquals($data['id'], $user->getId());
         $this->assertEquals($data['name'], $user->getName());
         $this->assertEquals($data['email'], $user->getEmail());
 
-        $this->assertEquals(1, $user->getCompany()->getId());
+        $this->assertEquals(1,
+            $user->getCompany()
+                ->getId()
+        );
 
         $permissions = $user->getPermissions();
         $this->assertEquals(1, $permissions[0]->getId());
@@ -207,36 +169,44 @@ class ArrayHydratorTest extends TestCase
 
     public function testFetchAssociationEntity()
     {
-        /** @var Fixture\User $user */
-        $user = new Fixture\User;
+        /** @var User() $user */
+        $user = new User();
         $company = new Company();
         $company->setId(1);
         $company->setName('testing');
 
         /** @var EntityManager $entityManagerMock */
-        $entityManagerMock = m::mock($this->entityManager)
-            ->shouldReceive('find')->with(Company::class, 1)
-            ->andReturn($company)
-            ->getMock();
+        $entityManagerMock =
+            m::mock($this->entityManager)
+                ->shouldReceive('find')
+                ->with(Company::class, 1)
+                ->andReturn($company)
+                ->getMock();
 
         $this->hydrator = new ArrayHydrator($entityManagerMock);
         $this->hydrator->setHydrateAssociationReferences(false);
         $user = $this->hydrator->hydrate($user, ['company' => $company->getId()]);
 
-        $this->assertEquals($company->getId(), $user->getCompany()->getId());
-        $this->assertEquals($company->getName(), $user->getCompany()->getName());
+        $this->assertEquals($company->getId(),
+            $user->getCompany()
+                ->getId()
+        );
+        $this->assertEquals($company->getName(),
+            $user->getCompany()
+                ->getName()
+        );
     }
 
     public function testConvertType()
     {
         $data = [
-            'id'        => '1',
-            'duration'  => '50',
+            'id' => '1',
+            'duration' => '50',
             'startTime' => '2017-10-23 17:57:00',
-            'status'    => 'true',
+            'status' => 'true',
         ];
 
-        $call = new Fixture\Call();
+        $call = new Call();
         $call = $this->hydrator->hydrate($call, $data);
 
         $this->assertInternalType('integer', $call->getDuration());

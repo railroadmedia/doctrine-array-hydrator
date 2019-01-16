@@ -1,5 +1,6 @@
 <?php
-namespace pmill\Doctrine\Hydrator\Test;
+
+namespace Railroad\DoctrineArrayHydrator\Tests\Unit;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Cache\ArrayCache;

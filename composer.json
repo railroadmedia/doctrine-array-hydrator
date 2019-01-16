@@ -23,12 +23,11 @@
     "codeclimate/php-test-reporter": "dev-master"
   },
   "autoload": {
-    "psr-4": {"pmill\\Doctrine\\Hydrator\\": "src/"}
+    "psr-4": {"Railroad\\DoctrineArrayHydrator\\": "src/"}
   },
   "autoload-dev": {
     "psr-4": {
-      "pmill\\Doctrine\\Hydrator\\Test\\": "tests/unit/",
-      "pmill\\Doctrine\\Hydrator\\Test\\Fixture\\": "tests/fixtures/"
+      "Railroad\\DoctrineArrayHydrator\\Tests\\": "tests/"
     }
   }
 }
