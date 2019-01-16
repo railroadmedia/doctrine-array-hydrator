@@ -1,13 +1,17 @@
 {
-  "name": "pmill/doctrine-array-hydrator",
+  "name": "railroad/doctrine-array-hydrator",
   "description": " An array to entity hydrator for Doctrine 2 entities ",
   "keywords": ["php", "doctrine", "hydrator", "array"],
-  "homepage": "https://github.com/pmill/doctrine-array-hydrator",
+  "homepage": "https://github.com/railroadmedia/doctrine-array-hydrator",
   "license": "MIT",
   "authors": [
     {
       "name": "pmill",
       "email": "dev.pmill@gmail.com"
+    },
+    {
+      "name": "Caleb",
+      "email": "caleb@drumeo.com"
     }
   ],
   "require": {
