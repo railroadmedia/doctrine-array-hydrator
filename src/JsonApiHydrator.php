@@ -51,6 +51,11 @@ class JsonApiHydrator extends ArrayHydrator
      */
     protected function hydrateAssociations($entity, $data)
     {
+        if (isset($data['data'])) {
+            // set 'relationships' as top level key - https://jsonapi.org/format/#document-resource-objects
+            $data = $data['data'];
+        }
+
         if (isset($data['relationships']) && is_array($data['relationships'])) {
             $metadata = $this->entityManager->getClassMetadata(get_class($entity));
 
