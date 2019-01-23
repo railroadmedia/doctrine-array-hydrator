@@ -221,6 +221,15 @@ class ArrayHydrator
      */
     protected function setProperty($entity, $propertyName, $value, $reflectionObject = null)
     {
+        // use the setter if it exists, otherwise use reflection
+        $getFunction = Inflector::camelize('set' . ucwords($propertyName));
+
+        if (method_exists($entity, $getFunction)) {
+            call_user_func([$entity, $getFunction], $value);
+
+            return $entity;
+        }
+
         $reflectionObject = is_null($reflectionObject) ? new ReflectionObject($entity) : $reflectionObject;
 
         $property = $reflectionObject->getProperty($propertyName);
