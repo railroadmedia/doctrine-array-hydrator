@@ -92,7 +92,7 @@ class ArrayHydrator
         foreach ($metaData->fieldNames as $fieldName) {
             $dataKey = Inflector::camelize($fieldName);
 
-            if (isset($data[$dataKey])) {
+            if (array_key_exists($dataKey, $data)) {
                 $value = $data[$dataKey];
 
                 if (array_key_exists('type', $metaData->fieldMappings[$fieldName])) {
