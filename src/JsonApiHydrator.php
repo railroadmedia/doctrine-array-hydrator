@@ -60,7 +60,7 @@ class JsonApiHydrator extends ArrayHydrator
         /**
          * @var $userProvider \Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface
          */
-        $userProvider = app()->make('UserProviderInterface');
+        $userProvider = app()->make(UserProviderInterface::class);
 
         if (isset($data['relationships']) && is_array($data['relationships'])) {
             $metadata = $this->entityManager->getClassMetadata(get_class($entity));
