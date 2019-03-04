@@ -70,7 +70,7 @@ class JsonApiHydrator extends ArrayHydrator
                 if (
                     !isset($metadata->associationMappings[$name]) && // if doctrine can handle this relationship, skip this block
                     isset($data['data']['type']) &&
-                    !$userProvider->isTransient($name, $data['data']['type'])
+                    !$userProvider->isTransient($data['data']['type'])
                 ) {
 
                     $userProvider->hydrateTransDomain($entity, $name, $data);
