@@ -5,6 +5,7 @@ namespace Railroad\DoctrineArrayHydrator;
 use Doctrine\DBAL\DBALException;
 use Exception;
 use ReflectionException;
+use Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface;
 
 /**
  * Json API Request Doctrine Hydrator
@@ -56,10 +57,27 @@ class JsonApiHydrator extends ArrayHydrator
             $data = $data['data'];
         }
 
+        /**
+         * @var $userProvider \Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface
+         */
+        $userProvider = app()->make('UserProviderInterface');
+
         if (isset($data['relationships']) && is_array($data['relationships'])) {
             $metadata = $this->entityManager->getClassMetadata(get_class($entity));
 
             foreach ($data['relationships'] as $name => $data) {
+
+                if (
+                    !isset($metadata->associationMappings[$name]) && // if doctrine can handle this relationship, skip this block
+                    isset($data['data']['type']) &&
+                    !$userProvider->isTransient($name, $data['data']['type'])
+                ) {
+
+                    $userProvider->hydrateTransDomain($entity, $name, $data);
+
+                    continue; // if the hydration took place, move to next relationships iteration, without throwing exception
+                }
+
                 if (!isset($metadata->associationMappings[$name])) {
                     throw new Exception(sprintf('Relation `%s` association not found', $name));
                 }
