@@ -6,6 +6,7 @@ use Doctrine\DBAL\DBALException;
 use Exception;
 use ReflectionException;
 use Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface;
+use function app;
 
 /**
  * Json API Request Doctrine Hydrator
