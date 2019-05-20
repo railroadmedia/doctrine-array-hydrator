@@ -2,6 +2,7 @@
 
 namespace Railroad\DoctrineArrayHydrator;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Inflector\Inflector;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
@@ -195,7 +196,7 @@ class ArrayHydrator
         $reflectionObject = new ReflectionObject($entity);
         $values = is_array($value) ? $value : [$value];
 
-        $associationObjects = [];
+        $associationObjects = new ArrayCollection();
 
         foreach ($values as $value) {
             if (is_array($value)) {
