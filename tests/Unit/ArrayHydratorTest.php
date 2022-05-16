@@ -3,6 +3,7 @@
 namespace Railroad\DoctrineArrayHydrator\Tests\Unit;
 
 use Doctrine\ORM\EntityManager;
+use Exception;
 use Mockery as m;
 use Railroad\DoctrineArrayHydrator\ArrayHydrator;
 use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Address;
@@ -21,7 +22,7 @@ class ArrayHydratorTest extends TestCase
     /**
      * @throws \Doctrine\ORM\ORMException
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->setupDoctrine();
         $this->hydrator = new ArrayHydrator($this->entityManager);
@@ -152,18 +153,21 @@ class ArrayHydratorTest extends TestCase
     }
 
     /**
-     * @expectedException \Exception
+     * @expectedException Exception
      */
     public function testInvalidClass()
     {
+        $this->expectException(Exception::class);
         $this->hydrator->hydrate(1, []);
     }
 
     /**
-     * @expectedException \Exception
+     * @expectedException Exception
      */
     public function testUnkownClass()
     {
+        $this->expectException(Exception::class);
+
         $this->hydrator->hydrate('An\Unknown\Class', []);
     }
 
@@ -209,8 +213,8 @@ class ArrayHydratorTest extends TestCase
         $call = new Call();
         $call = $this->hydrator->hydrate($call, $data);
 
-        $this->assertInternalType('integer', $call->getDuration());
+        $this->assertIsInt($call->getDuration());
         $this->assertInstanceOf(\DateTime::class, $call->getStartTime());
-        $this->assertInternalType('bool', $call->isStatus());
+        $this->assertIsBool($call->isStatus());
     }
 }

@@ -3,13 +3,24 @@
 namespace Railroad\DoctrineArrayHydrator\Tests\Fixtures\Functional;
 
 use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\InflectorFactory;
 use Illuminate\Support\Facades\DB;
 use Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface;
 use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Functional\User;
 
 class UserProvider implements UserProviderInterface
 {
+    /**
+     * @var \Doctrine\Inflector\Inflector
+     */
+    protected $inflector;
+
     CONST RESOURCE_TYPE = 'user';
+
+    public function __construct()
+    {
+        $this->inflector = InflectorFactory::create()->build();
+    }
 
     public function getUserById(int $id): ?User
     {
@@ -33,7 +44,7 @@ class UserProvider implements UserProviderInterface
         array $data
     ): void {
 
-        $setterName = Inflector::camelize('set' . ucwords($relationName));
+        $setterName = $this->inflector->camelize('set' . ucwords($relationName));
 
         if (
             isset($data['data']['type']) &&

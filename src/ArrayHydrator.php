@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Inflector\Inflector;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\Inflector\InflectorFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\ORMException;
@@ -19,6 +20,11 @@ class ArrayHydrator
      * @var EntityManagerInterface
      */
     protected $entityManager;
+
+    /**
+     * @var \Doctrine\Inflector\Inflector
+     */
+    protected $inflector;
 
     /**
      * If true, then associations are filled only with reference proxies. This is faster than querying them from
@@ -36,6 +42,7 @@ class ArrayHydrator
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
+        $this->inflector = InflectorFactory::create()->build();
     }
 
     /**
@@ -91,7 +98,7 @@ class ArrayHydrator
                 ->getDatabasePlatform();
 
         foreach ($metaData->fieldNames as $fieldName) {
-            $dataKey = Inflector::camelize($fieldName);
+            $dataKey = $this->inflector->camelize($fieldName);
 
             if (array_key_exists($dataKey, $data)) {
                 $value = $data[$dataKey];
@@ -223,7 +230,7 @@ class ArrayHydrator
     protected function setProperty($entity, $propertyName, $value, $reflectionObject = null)
     {
         // use the setter if it exists, otherwise use reflection
-        $getFunction = Inflector::camelize('set' . ucwords($propertyName));
+        $getFunction = $this->inflector->camelize('set' . ucwords($propertyName));
 
         if (method_exists($entity, $getFunction)) {
             call_user_func([$entity, $getFunction], $value);
@@ -266,7 +273,7 @@ class ArrayHydrator
         $camelizedArray = [];
 
         foreach ($array as $valueIndex => $value) {
-            $camelizedArray[Inflector::camelize($valueIndex)] = $value;
+            $camelizedArray[$this->inflector->camelize($valueIndex)] = $value;
         }
 
         return $camelizedArray;

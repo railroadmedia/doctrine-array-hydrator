@@ -4,6 +4,7 @@ namespace Railroad\DoctrineArrayHydrator\Tests\Functional;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface;
 use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Functional\UserProvider;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -29,7 +31,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected $faker;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -68,12 +70,14 @@ abstract class TestCase extends BaseTestCase
             'driver'=>'pdo_sqlite',
             'dbname'=>':memory:',
         ];
+        $arrayCacheAdapter = new ArrayAdapter();
+        $doctrineArrayCache = DoctrineProvider::wrap($arrayCacheAdapter);
 
         $doctrineConfig = Setup::createAnnotationMetadataConfiguration(
             ['tests/fixtures/functional'],
             false,
             getcwd().'/build/tmp',
-            new ArrayCache(),
+            $doctrineArrayCache,
             false
         );
 
@@ -87,12 +91,12 @@ abstract class TestCase extends BaseTestCase
     {
         DB::connection()
             ->setPdo(
-                $this->entityManager->getConnection()->getWrappedConnection()
+                $this->entityManager->getConnection()->getNativeConnection()
             );
 
         DB::connection()
             ->setReadPdo(
-                $this->entityManager->getConnection()->getWrappedConnection()
+                $this->entityManager->getConnection()->getNativeConnection()
             );
 
         Schema::create(

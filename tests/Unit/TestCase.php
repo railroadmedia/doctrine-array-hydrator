@@ -2,12 +2,15 @@
 
 namespace Railroad\DoctrineArrayHydrator\Tests\Unit;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\ORM\EntityManager;
+use Orchestra\Testbench\TestCase as BaseTestCase;
+use Railroad\DoctrineArrayHydrator\Contracts\UserProviderInterface;
+use Railroad\DoctrineArrayHydrator\Tests\Fixtures\Functional\UserProvider;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends BaseTestCase
 {
 
     /**
@@ -55,11 +58,17 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'driver'=>'pdo_sqlite',
             'dbname'=>':memory:',
         ];
-        $doctrineConfig = \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration(['tests/fixtures/'], false, getcwd().'/build/tmp', new ArrayCache(), false);
+        $arrayCacheAdapter = new ArrayAdapter();
+        $doctrineArrayCache = DoctrineProvider::wrap($arrayCacheAdapter);
+
+        $doctrineConfig = \Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration(['tests/fixtures/'], false, getcwd().'/build/tmp', $doctrineArrayCache, false);
         $doctrineConfig->setAutoGenerateProxyClasses(true);
 
         $this->entityManager = EntityManager::create($databaseConfig, $doctrineConfig);
         $this->annotationReader = $this->entityManager->getConfiguration()->getMetadataDriverImpl();
+
+        $userProvider = new UserProvider();
+        app()->instance(UserProviderInterface::class, $userProvider);
     }
 
     /**

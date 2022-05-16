@@ -16,7 +16,7 @@ class JsonApiHydratorTest extends TestCase
     /**
      * @throws \Doctrine\ORM\ORMException
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->setupDoctrine();
         $this->hydrator = new JsonApiHydrator($this->entityManager);
@@ -141,7 +141,7 @@ class JsonApiHydratorTest extends TestCase
 
     public function testNotFoundRelationship()
     {
-        $this->setExpectedException(
+        $this->expectException(
             \Exception::class,
             'Relation `test` association not found'
         );
