@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\ORMException;
 use Exception;
+use Illuminate\Support\Str;
 use ReflectionException;
 use ReflectionObject;
 
@@ -91,7 +92,12 @@ class ArrayHydrator
                 ->getDatabasePlatform();
 
         foreach ($metaData->fieldNames as $fieldName) {
-            $dataKey = Inflector::camelize($fieldName);
+            // TEMP HACK to get things working for 'Class "Doctrine\Common\Inflector\Inflector" not found'
+            if (class_exists(Inflector::class)){
+                $dataKey = Inflector::camelize($fieldName);
+            } else {
+                $dataKey = Str::camel($fieldName);
+            }
 
             if (array_key_exists($dataKey, $data)) {
                 $value = $data[$dataKey];
@@ -223,7 +229,12 @@ class ArrayHydrator
     protected function setProperty($entity, $propertyName, $value, $reflectionObject = null)
     {
         // use the setter if it exists, otherwise use reflection
-        $getFunction = Inflector::camelize('set' . ucwords($propertyName));
+        // TEMP HACK to get things working for 'Class "Doctrine\Common\Inflector\Inflector" not found'
+        if (class_exists(Inflector::class)){
+            $getFunction = Inflector::camelize('set' . ucwords($propertyName));
+        } else {
+            $getFunction = Str::camel('set' . ucwords($propertyName));
+        }
 
         if (method_exists($entity, $getFunction)) {
             call_user_func([$entity, $getFunction], $value);
@@ -266,7 +277,12 @@ class ArrayHydrator
         $camelizedArray = [];
 
         foreach ($array as $valueIndex => $value) {
-            $camelizedArray[Inflector::camelize($valueIndex)] = $value;
+            // TEMP HACK to get things working for 'Class "Doctrine\Common\Inflector\Inflector" not found'
+            if (class_exists(Inflector::class)){
+                $camelizedArray[Inflector::camelize($valueIndex)] = $value;
+            } else {
+                $camelizedArray[Str::camel($valueIndex)] = $value;
+            }
         }
 
         return $camelizedArray;
